@@ -15,23 +15,20 @@ typedef struct
 {
     int counter;
     sem_t mutex;
+    sem_t turnstile;
 } SharedData;
 
 void child_process(SharedData *shared_memory, int id)
 {
     for (int i = 0; i < NUM_INCREMENTS; i++)
     {
+        sem_wait(&(shared_memory->turnstile)); // Wait for turnstile
+        sem_post(&(shared_memory->turnstile)); // Pass turnstile to next process
+
         sem_wait(&(shared_memory->mutex)); // Wait for access to the counter
         shared_memory->counter++;
         printf("Child %d incremented counter to: %d\n", id, shared_memory->counter);
         sem_post(&(shared_memory->mutex)); // Release access to the counter
-
-        // Wait for the other child processes to complete their increments
-        for (int j = 0; j < NUM_CHILDREN - 1; j++)
-        {
-            sem_wait(&(shared_memory->mutex));
-            sem_post(&(shared_memory->mutex));
-        }
     }
 }
 
@@ -59,10 +56,17 @@ int main()
     // Initialize the counter
     shared_memory->counter = 0;
 
-    // Initialize semaphore
+    // Initialize mutex semaphore
     if (sem_init(&(shared_memory->mutex), 1, 1) == -1)
     {
-        perror("sem_init");
+        perror("sem_init(mutex)");
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize turnstile semaphore
+    if (sem_init(&(shared_memory->turnstile), 1, 0) == -1)
+    {
+        perror("sem_init(turnstile)");
         exit(EXIT_FAILURE);
     }
 
@@ -102,10 +106,17 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    // Destroy semaphore
+    // Destroy mutex semaphore
     if (sem_destroy(&(shared_memory->mutex)) == -1)
     {
-        perror("sem_destroy");
+        perror("sem_destroy(mutex)");
+        exit(EXIT_FAILURE);
+    }
+
+    // Destroy turnstile semaphore
+    if (sem_destroy(&(shared_memory->turnstile)) == -1)
+    {
+        perror("sem_destroy(turnstile)");
         exit(EXIT_FAILURE);
     }
 
