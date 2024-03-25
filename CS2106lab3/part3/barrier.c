@@ -35,7 +35,8 @@ void init_barrier(int numproc) {
 
 void reach_barrier() {
     sem_wait(sem1);
-    *count = *count + 1; // increment count when new process has reached barrier
+    // *count = *count + 1; // increment count when new process has reached barrier
+    (*count)++;
     if (*count == nproc) {
         sem_post(barrier); // last process at the barrier sends a signal
     } 

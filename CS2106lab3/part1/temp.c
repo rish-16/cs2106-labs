@@ -37,17 +37,13 @@ void init_barrier(int numproc) {
 }
 
 void reach_barrier() {
-  sem_wait(mutex); // Lock the mutex to protect count
+  sem_wait(mutex); 
   (*count)++;
   if (*count == nproc) {
-    // If this is the last process, release the barrier semaphore once
     sem_post(barrier);
   }
-  sem_post(mutex); // Unlock the mutex
-
-  // Wait at the barrier semaphore if not the last process
+  sem_post(mutex);
   sem_wait(barrier);
-  // Release the barrier semaphore for the next process
   sem_post(barrier);
 }
 
