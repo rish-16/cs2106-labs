@@ -31,7 +31,7 @@ int main() {
     sem_init(semaphore, 1, 0);
 
     // Attach the shared memory segment
-    if (semaphore == (int *)-1) {
+    if (*semaphore == (int *)-1) {
         printf("Cannot attach shared memory!\n");
         exit(1);
     }
