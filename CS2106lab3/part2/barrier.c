@@ -35,13 +35,17 @@ void init_barrier(int numproc) {
 
 void reach_barrier() {
     sem_wait(sem1);
-    *count = *count + 1; // increment count when new process has reached barrier
-    if (*count == nproc) {
-        sem_post(barrier); // last process at the barrier sends a signal
-    } 
+    // *count = *count + 1; // increment count when new process has reached barrier
+    (*count)++;
     sem_post(sem1); // unlock the counter mutex –> other variables are free to access counter
-    sem_wait(barrier); // not the last process -> block cur process and wait until last process reaches
-    sem_post(barrier); // now that cur process is free, all other processes are released
+    
+    if (*count == nproc) {
+        *count = 0; // reset count to 0
+        sem_post(barrier); // last process at the barrier sends a signal
+    } else {
+        sem_wait(barrier); // not the last process -> block cur process and wait until last process reaches
+        sem_post(barrier); // now that cur process is free, all other processes are released
+    }
 }
 
 void destroy_barrier(int my_pid) {
@@ -53,10 +57,10 @@ void destroy_barrier(int my_pid) {
 
         // if parent, destroy semaphores
         sem_destroy(sem1);
-        free(sem1);
+        // free(sem1);
 
         sem_destroy(barrier);
-        free(barrier);
+        // free(barrier);
 
         // detach from SHM
         if (shmdt(count) == -1) {
