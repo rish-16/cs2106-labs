@@ -5,16 +5,17 @@
 #include <sys/wait.h>
 #include <sys/shm.h>
 
-int *count;
-int nproc;
 sem_t *sem1; // the mutex semaphore
 sem_t *barrier;
+int *count;
+int nproc;
 
 void init_barrier(int numproc) {
     nproc = numproc;
 
     int shmid;
-    shmid = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0666);
+    int size = sizeof(int) + (2 * sizeof(sem_t));
+    shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0666);
     count = (int *)shmat(shmid, NULL, 0);
 
     if (shmid == -1) {
@@ -26,10 +27,12 @@ void init_barrier(int numproc) {
 
     *count = 0; // init count
 
-    sem1 = (sem_t *)malloc(sizeof(sem_t));
+    // sem1 = (sem_t *)malloc(sizeof(sem_t));
+    sem1 = (sem_t *)shmat(shmid, NULL, 0);
     sem_init(sem1, 1, 1);
 
-    barrier = (sem_t *)malloc(sizeof(sem_t));
+    // barrier = (sem_t *)malloc(sizeof(sem_t));
+    barrier = (sem_t *)shmat(shmid, NULL, 0);
     sem_init(barrier, 1, 0);
 }
 

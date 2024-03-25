@@ -31,8 +31,7 @@ int main() {
         // Reach the barrier.
         printf("\tChild %d slept for %3.2f seconds and has now reached the barrier\n", i, sleep_time[i]/1000000.0);
         reach_barrier();
-    }
-    else {
+    } else {
         // Parent will just wait at barrier for all children to return
         printf("**Parent waiting for children**\n\n");
         reach_barrier();
