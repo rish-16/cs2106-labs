@@ -27,13 +27,7 @@ int main() {
     }
 
     counter = (int *)shmat(shmid1, NULL, 0);
-    // semaphore = (sem_t *)shmat(shmid2, NULL, 0);
-
-    // Attach the shared memory segment
-    if ((semaphore = (sem_t *)shmat(shmid2, NULL, 0)) == (int *)-1){
-        printf("Cannot attach shared memory!\n");
-        exit(1);
-    }
+    semaphore = (sem_t *)shmat(shmid2, NULL, 0);
     
     sem_init(semaphore, 1, 0);
     *counter = 0;
