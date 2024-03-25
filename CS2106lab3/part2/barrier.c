@@ -57,9 +57,10 @@ void reach_barrier() {
     sem_post(sem1); // unlock the counter mutex –> other variables are free to access counter
     if (*count == nproc) {
         sem_post(barrier); // last process at the barrier sends a signal
+    } else {
+        sem_wait(barrier); // not the last process -> block cur process and wait until last process reaches
+        sem_post(barrier); // now that cur process is free, all other processes are released
     }
-    sem_wait(barrier); // not the last process -> block cur process and wait until last process reaches
-    sem_post(barrier); // now that cur process is free, all other processes are released
 }
 
 void destroy_barrier(int my_pid) {
