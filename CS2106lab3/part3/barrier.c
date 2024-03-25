@@ -35,8 +35,8 @@ void init_barrier(int numproc) {
 
 void reach_barrier() {
     sem_wait(sem1);
-    // *count = *count + 1; // increment count when new process has reached barrier
-    (*count)++;
+    *count = *count + 1; // increment count when new process has reached barrier
+    // (*count)++;
     sem_post(sem1); // unlock the counter mutex –> other variables are free to access counter
     
     if (*count == nproc) {
