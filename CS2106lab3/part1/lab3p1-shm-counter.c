@@ -53,8 +53,8 @@ int main() {
         for (int j = 0; j < 5; j++) {
             sem_post(semaphore);
             *counter = *counter + 1; // update counter
-            sem_wait(semaphore);
             printf("Child %d increment counter %d\n", i + 1, *counter);
+            sem_wait(semaphore);
             fflush(stdout);
             usleep(250000);
         }
