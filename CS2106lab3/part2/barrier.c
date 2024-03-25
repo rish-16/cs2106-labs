@@ -58,10 +58,7 @@ void destroy_barrier(int my_pid) {
 
         // if parent, destroy semaphores
         sem_destroy(sem1);
-        free(sem1);
-
         sem_destroy(barrier);
-        free(barrier);
 
         // detach from SHM
         if (shmdt(count) == -1) {
