@@ -5,18 +5,26 @@
 #include <sys/wait.h>
 #include <sys/shm.h>
 
-sem_t *sem1; // the mutex semaphore
-sem_t *barrier;
-int *count;
-int nproc;
+// sem_t *sem1; // the mutex semaphore
+// sem_t *barrier;
+// int *count;
+// int nproc;
+
+typedef struct {
+    sem_t *sem1; // the mutex semaphore
+    sem_t *barrier;
+    int *count;
+    int nproc;
+} BarrierObject;
+
+BarrierObject *barrier_object;
 
 void init_barrier(int numproc) {
-    nproc = numproc;
-
+    // nproc = numproc;
     int shmid;
+
     int size = sizeof(int) + (2 * sizeof(sem_t));
-    shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0666);
-    count = (int *)shmat(shmid, NULL, 0);
+    shmid = shmget(IPC_PRIVATE, sizeof(BarrierObject), IPC_CREAT | 0666);
 
     if (shmid == -1) {
         printf("Cannot create shared memory!\n");
@@ -25,15 +33,18 @@ void init_barrier(int numproc) {
         printf("Shared Memory Id = %d\n", shmid);
     }
 
-    *count = 0; // init count
+    barrier_object = (BarrierObject *)shmat(shmid, NULL, 0);
+    barrier_object->nproc = numproc;
+    *barrier_object->count = 0;
 
     // sem1 = (sem_t *)malloc(sizeof(sem_t));
-    sem1 = (sem_t *)shmat(shmid, NULL, 0);
-    sem_init(sem1, 1, 1);
+    
+    barrier_object->sem1 = (sem_t *)shmat(shmid, NULL, 0);
+    sem_init(barrier_object->sem1, 1, 1);
 
     // barrier = (sem_t *)malloc(sizeof(sem_t));
-    barrier = (sem_t *)shmat(shmid, NULL, 0);
-    sem_init(barrier, 1, 0);
+    barrier_object->barrier = (sem_t *)shmat(shmid, NULL, 0);
+    sem_init(barrier_object->barrier, 1, 0);
 }
 
 // void reach_barrier() {
@@ -52,14 +63,15 @@ void init_barrier(int numproc) {
 // }
 
 void reach_barrier() {
-    sem_wait(sem1);
-    (*count)++;
-    sem_post(sem1); // unlock the counter mutex –> other variables are free to access counter
-    if (*count == nproc) {
-        sem_post(barrier); // last process at the barrier sends a signal
+    sem_wait(barrier_object->sem1);
+    (*barrier_object->count)++;
+    sem_post(barrier_object->sem1); // unlock the counter mutex –> other variables are free to access counter
+    if (*barrier_object->count == barrier_object)
+    {
+        sem_post(barrier_object->barrier); // last process at the barrier sends a signal
     } else {
-        sem_wait(barrier); // not the last process -> block cur process and wait until last process reaches
-        sem_post(barrier); // now that cur process is free, all other processes are released
+        sem_wait(barrier_object->barrier); // not the last process -> block cur process and wait until last process reaches
+        sem_post(barrier_object->barrier); // now that cur process is free, all other processes are released
     }
 }
 
@@ -73,14 +85,19 @@ void destroy_barrier(int my_pid) {
         printf("Destroying ...");
 
         // if parent, destroy semaphores
-        sem_destroy(sem1);
-        free(sem1);
+        sem_destroy(barrier_object->sem1);
+        free(barrier_object->sem1);
 
-        sem_destroy(barrier);
-        free(barrier);
+        sem_destroy(barrier_object->barrier);
+        free(barrier_object->barrier);
 
         // detach from SHM
-        if (shmdt(count) == -1) {
+        if (shmdt(barrier_object->count) == -1) {
+            perror("shmdt");
+            exit(EXIT_FAILURE);
+        }
+
+        if (shmdt(barrier_object) == -1){
             perror("shmdt");
             exit(EXIT_FAILURE);
         }
