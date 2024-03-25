@@ -41,7 +41,6 @@ void init_barrier(int numproc) {
     barrier_object->barrier = (sem_t *)malloc(sizeof(sem_t));
     sem_init(barrier_object->sem1, 1, 1);
     sem_init(barrier_object->barrier, 1, 0);
-    printf("CREATED");
 }
 
 // void reach_barrier() {
@@ -78,8 +77,6 @@ void destroy_barrier(int my_pid) {
         // and free any shared memory. Notice
         // that we explicity check that it is
         // the parent doing it.
-
-        printf("Destroying ...");
 
         // if parent, destroy semaphores
         // sem_destroy(barrier_object->sem1);
