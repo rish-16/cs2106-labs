@@ -51,10 +51,10 @@ int main() {
 
         // Simulate some work
         for (int j = 0; j < 5; j++) {
-            sem_post(semaphore);
+            sem_wait(semaphore);
             *counter = *counter + 1; // update counter
             printf("Child %d increment counter %d\n", i + 1, *counter);
-            sem_wait(semaphore);
+            sem_post(semaphore);
             fflush(stdout);
             usleep(250000);
         }
