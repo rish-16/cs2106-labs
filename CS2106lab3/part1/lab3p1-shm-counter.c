@@ -49,19 +49,17 @@ int main() {
 
         printf("Child %d starts\n", i + 1);
 
-        sem_post(semaphore);
-
         // Simulate some work
         for (int j = 0; j < 5; j++) {
+            sem_post(semaphore);
             *counter = *counter + 1; // update counter
+            sem_wait(semaphore);
             printf("Child %d increment counter %d\n", i + 1, *counter);
             fflush(stdout);
             usleep(250000);
         }
 
         printf("Child %d finishes with counter %d\n", i + 1, *counter);
-
-        sem_wait(semaphore);
 
         exit(EXIT_SUCCESS);
     }
