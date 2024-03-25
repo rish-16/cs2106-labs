@@ -20,6 +20,8 @@ int main() {
     clock_t start, end;
     double time_taken;
 
+    init_barrier(NUM_PROCESSES + 1);
+
     float per_process_raw = (float) VECT_SIZE / NUM_PROCESSES;
     int per_process = (int) per_process_raw;
 
@@ -46,8 +48,6 @@ int main() {
 
     int j;
     long int sum = 0; // local sum
-
-    init_barrier(NUM_PROCESSES+1);
 
     if (pid == 0) {
 	    /*insert code */
