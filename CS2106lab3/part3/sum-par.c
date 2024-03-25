@@ -75,7 +75,6 @@ int main() {
             local_sum += vect[k];
         }
 
-        printf ("LS: %ld", local_sum);
         all_sum[i] = local_sum; // store local sum
         reach_barrier(); // wait for other processes to reach the end
     } else {
