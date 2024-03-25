@@ -40,7 +40,7 @@ void reach_barrier() {
     sem_post(sem1); // unlock the counter mutex –> other variables are free to access counter
     
     if (*count == nproc) {
-        *count = 0; // reset count to 0
+        // *count = 0; // reset count to 0
         sem_post(barrier); // last process at the barrier sends a signal
     } else {
         sem_wait(barrier); // not the last process -> block cur process and wait until last process reaches
