@@ -11,29 +11,32 @@
 
 int main() {
 
-    int shmid, *shm;
+    int shmid1, shmid2, *shm;
     sem_t *semaphore;
-    int *arr;
+    int *counter;
 
-    shmid = shmget(IPC_PRIVATE, 2 * sizeof(int), IPC_CREAT | 0666);
-    arr = (int *) shmat(shmid, NULL, 0);
-    *arr[0] = *semaphore;
-    sem_init(semaphore, 1, 0);
-
-    if (shmid == -1) {
+    shmid1 = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0666);
+    shmid2 = shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | 0666);
+    
+    if (shmid1 == -1 || shmid2 == -1) {
         printf("Cannot create shared memory!\n");
         exit(1);
     } else {
-        printf("Shared Memory Id = %d\n", shmid);
+        printf("Shared Memory Id = %d\n", shmid1);
+        printf("Shared Memory Id = %d\n", shmid2);
     }
 
-    // Attach the shared memory segment
-    // if (*semaphore == (int *)-1) {
-    //     printf("Cannot attach shared memory!\n");
-    //     exit(1);
-    // }
+    counter = (int *)shmat(shmid1, NULL, 0);
+    semaphore = (sem_t *)shmat(shmid2, NULL, 0);
+    sem_init(semaphore, 1, 0);
 
-    *arr = 0; // counter
+    // Attach the shared memory segment
+    if (semaphore == (int *)-1) {
+        printf("Cannot attach shared memory!\n");
+        exit(1);
+    }
+
+    *counter = 0;
 
     // int counter = 0, i;
     int i;
@@ -55,14 +58,14 @@ int main() {
         // Simulate some work
         for (int j = 0; j < 5; j++) {
             sem_wait(semaphore);
-            *arr = *arr + 1; // update counter
-            printf("Child %d increment counter %d\n", i + 1, *arr);
+            *counter = *counter + 1; // update counter
+            printf("Child %d increment counter %d\n", i + 1, *counter);
             sem_post(semaphore);
             fflush(stdout);
             usleep(250000);
         }
 
-        printf("Child %d finishes with counter %d\n", i + 1, *arr);
+        printf("Child %d finishes with counter %d\n", i + 1, *counter);
 
         exit(EXIT_SUCCESS);
     }
@@ -73,21 +76,20 @@ int main() {
     }
 
     // Print the final value of thecounter
-    printf("Final counter value: %d\n", *arr);
+    printf("Final counter value: %d\n", *counter);
 
     // Detach the shared memory segment
-    if (shmdt(arr) == -1) {
+    if (shmdt(counter) == -1) {
         perror("shmdt");
         exit(1);
     }
 
-    if (shmctl(shmid, IPC_RMID, NULL) == -1) {
+    if (shmctl(shmid1, IPC_RMID, NULL) == -1) {
         perror("shmctl");
     }
 
     // Destroy semaphore
     sem_destroy(semaphore);
-    free(semaphore);
 
     return 0;
 }
