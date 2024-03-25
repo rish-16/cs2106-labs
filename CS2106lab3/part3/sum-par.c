@@ -49,7 +49,7 @@ int main() {
 
     init_barrier(NUM_PROCESSES+1);
 
-    if(pid == 0) {
+    if (pid == 0) {
 	    /*insert code */
         // child
 
@@ -75,6 +75,7 @@ int main() {
             local_sum += vect[k];
         }
 
+        printf ("LS: %d", local_sum);
         all_sum[i] = local_sum; // store local sum
         reach_barrier(); // wait for other processes to reach the end
     } else {
