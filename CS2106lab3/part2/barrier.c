@@ -51,9 +51,7 @@ void init_barrier(int numproc) {
 void reach_barrier() {
     sem_wait(sem1);
     (*count)++;
-    printf ("Incremented %d and waiting ...", *count);
     if (*count == nproc) {
-        printf ("Done!");
         sem_post(barrier); // last process at the barrier sends a signal
     }
     sem_post(sem1);    // unlock the counter mutex –> other variables are free to access counter
@@ -62,11 +60,13 @@ void reach_barrier() {
 }
 
 void destroy_barrier(int my_pid) {
-    if(my_pid != 0) {
+    if (my_pid != 0) {
         // Destroy the semaphores and detach
         // and free any shared memory. Notice
         // that we explicity check that it is
         // the parent doing it.
+
+        print ("Destroying ...")
 
         // if parent, destroy semaphores
         sem_destroy(sem1);
