@@ -35,11 +35,11 @@ void init_barrier(int numproc) {
 
     barrier_object = (BarrierObject *)shmat(shmid, NULL, 0);
     barrier_object->nproc = numproc;
-    barrier_object->count = 0;
+    *barrier_object->count = 0;
 
     sem_init(barrier_object->sem1, 1, 1);
     sem_init(barrier_object->barrier, 1, 0);
-    printf("CREATED")
+    printf("CREATED");
 }
 
 // void reach_barrier() {
@@ -61,7 +61,7 @@ void reach_barrier() {
     sem_wait(barrier_object->sem1);
     (barrier_object->count)++;
     sem_post(barrier_object->sem1); // unlock the counter mutex –> other variables are free to access counter
-    if (barrier_object->count == barrier_object->nproc) {
+    if (*barrier_object->count == barrier_object->nproc) {
         sem_post(barrier_object->barrier); // last process at the barrier sends a signal
     } else {
         sem_wait(barrier_object->barrier); // not the last process -> block cur process and wait until last process reaches
