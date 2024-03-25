@@ -53,6 +53,7 @@ void reach_barrier() {
     (*count)++;
     printf ("Incremented %d and waiting ...", *count);
     if (*count == nproc) {
+        printf ("Done!")
         sem_post(barrier); // last process at the barrier sends a signal
     }
     sem_post(sem1);    // unlock the counter mutex –> other variables are free to access counter
