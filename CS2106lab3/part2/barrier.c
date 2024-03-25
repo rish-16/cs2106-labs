@@ -66,7 +66,7 @@ void destroy_barrier(int my_pid) {
         // that we explicity check that it is
         // the parent doing it.
 
-        print ("Destroying ...")
+        printf("Destroying ...");
 
         // if parent, destroy semaphores
         sem_destroy(sem1);
