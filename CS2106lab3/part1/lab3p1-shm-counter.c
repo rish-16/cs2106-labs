@@ -48,18 +48,20 @@ int main() {
         // Child process
 
         printf("Child %d starts\n", i + 1);
-        
+
+        sem_post(semaphore);
+
         // Simulate some work
         for (int j = 0; j < 5; j++) {
-            sem_wait(semaphore);
             *counter = *counter + 1; // update counter
             printf("Child %d increment counter %d\n", i + 1, *counter);
-            sem_post(semaphore);
             fflush(stdout);
             usleep(250000);
         }
 
         printf("Child %d finishes with counter %d\n", i + 1, *counter);
+
+        sem_wait(semaphore);
 
         exit(EXIT_SUCCESS);
     }
@@ -78,7 +80,16 @@ int main() {
         exit(1);
     }
 
+    if (shmdt(semaphore) == -1) {
+        perror("shmdt");
+        exit(1);
+    }
+
     if (shmctl(shmid1, IPC_RMID, NULL) == -1) {
+        perror("shmctl");
+    }
+
+    if (shmctl(shmid2, IPC_RMID, NULL) == -1) {
         perror("shmctl");
     }
 
