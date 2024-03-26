@@ -11,26 +11,34 @@
 
 int main() {
 
-    int shmid1, shmid2, *shm;
-    sem_t *semaphore;
+    int shmid, *shm;
+    void *shared_memory; // Pointer to shared memory
     int *counter;
+    sem_t *semaphores;
 
-    shmid1 = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0666);
-    shmid2 = shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | 0666);
+    int size = sizeof(int) + NUM_CHILDREN*sizeof(sem_t);
+    shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0666);
     
-    if (shmid1 == -1 || shmid2 == -1) {
+    if (shmid == -1) {
         printf("Cannot create shared memory!\n");
         exit(1);
     } else {
-        printf("Shared Memory Id = %d\n", shmid1);
-        printf("Shared Memory Id = %d\n", shmid2);
+        printf("Shared Memory Id = %d\n", shmid);
     }
 
-    counter = (int *)shmat(shmid1, NULL, 0);
-    semaphore = (sem_t *)shmat(shmid2, NULL, 0);
-    
-    sem_init(semaphore, 1, 0);
+    shared_memory = shmat(shmid, NULL, 0);
+    if (shared_memory == (void *)-1) {
+        perror("shmat");
+        exit(1);
+    }
+
+    counter = (int *) shared_memory;
+    semaphores = (sem_t *) (shared_memory + sizeof(int));
+
     *counter = 0;
+    for (int k = 0; k < NUM_CHILDREN; k++) {
+        sem_init(&semaphores[k], 1, 0); // Initialize semaphore with value 1
+    }
 
     // int counter = 0, i;
     int i;
@@ -47,19 +55,22 @@ int main() {
     } else if (pid == 0) {
         // Child process
 
+        sem_wait(semaphores[i]);
+
         printf("Child %d starts\n", i + 1);
 
         // Simulate some work
         for (int j = 0; j < 5; j++) {
-            sem_wait(semaphore);
             *counter = *counter + 1; // update counter
             printf("Child %d increment counter %d\n", i + 1, *counter);
-            sem_post(semaphore);
             fflush(stdout);
             usleep(250000);
         }
 
         printf("Child %d finishes with counter %d\n", i + 1, *counter);
+
+        sem_destroy(semaphores[i]);
+        sem_post(semaphores[i+1]);
 
         exit(EXIT_SUCCESS);
     }
@@ -78,21 +89,17 @@ int main() {
         exit(1);
     }
 
-    if (shmdt(semaphore) == -1) {
-        perror("shmdt");
-        exit(1);
+    for (int k = 0; k < NUM_CHILDREN; k++) {
+        if (shmdt(semaphores[k]) == -1) {
+            perror("shmdt");
+            exit(1);
+        }
+        sem_destroy(semaphores[k]);
     }
 
-    if (shmctl(shmid1, IPC_RMID, NULL) == -1) {
+    if (shmctl(shmid, IPC_RMID, NULL) == -1) {
         perror("shmctl");
     }
-
-    if (shmctl(shmid2, IPC_RMID, NULL) == -1) {
-        perror("shmctl");
-    }
-
-    // Destroy semaphore
-    sem_destroy(semaphore);
 
     return 0;
 }
