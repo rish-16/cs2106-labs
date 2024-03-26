@@ -37,7 +37,7 @@ int main() {
 
     *counter = 0;
     for (int k = 0; k < NUM_CHILDREN; k++) {
-        sem_init(&semaphores[k], 1, 0); // Initialize semaphore with value 1
+        sem_init(&semaphores[k], 1, 1); // Initialize semaphore with value 1
     }
 
     // int counter = 0, i;
