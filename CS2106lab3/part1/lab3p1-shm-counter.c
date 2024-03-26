@@ -55,7 +55,7 @@ int main() {
     } else if (pid == 0) {
         // Child process
 
-        sem_wait(semaphores[i]);
+        sem_wait(&semaphores[i]);
 
         printf("Child %d starts\n", i + 1);
 
@@ -71,7 +71,7 @@ int main() {
 
         sem_destroy(semaphores[i]);
         sem_post(semaphores[i+1]);
-
+        shmdt(counter);
         exit(EXIT_SUCCESS);
     }
 
