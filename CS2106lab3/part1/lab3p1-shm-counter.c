@@ -69,9 +69,9 @@ int main() {
 
         printf("Child %d finishes with counter %d\n", i + 1, *counter);
 
-        sem_destroy(semaphores[i]);
-        sem_post(semaphores[i+1]);
-        shmdt(counter);
+        sem_destroy(&semaphores[i]);
+        sem_post(&semaphores[i+1]);
+        shmdt((char *) counter);
         exit(EXIT_SUCCESS);
     }
 
