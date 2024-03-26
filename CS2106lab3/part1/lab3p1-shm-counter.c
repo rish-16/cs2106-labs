@@ -11,8 +11,8 @@
 
 int main() {
 
-    int shmid, *shm;
-    void *shared_memory; // Pointer to shared memory
+    int shmid;
+    int *shared_memory; // Pointer to shared memory
     int *counter;
     sem_t *semaphores;
 
@@ -33,7 +33,7 @@ int main() {
     }
 
     counter = (int *) shared_memory;
-    semaphores = (sem_t *) (shared_memory + sizeof(int));
+    semaphores = (sem_t *) (counter + 1);
 
     *counter = 0;
     for (int k = 0; k < NUM_CHILDREN; k++) {
