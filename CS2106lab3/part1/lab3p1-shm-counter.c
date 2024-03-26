@@ -37,7 +37,7 @@ int main() {
 
     *counter = 0;
     for (int k = 0; k < NUM_CHILDREN; k++) {
-        sem_init(&semaphores[k], 1, 0); // Initialize semaphore with value 1
+        sem_init(semaphores[k], 1, 0); // Initialize semaphore with value 1
     }
 
     // int counter = 0, i;
@@ -55,7 +55,7 @@ int main() {
     } else if (pid == 0) {
         // Child process
 
-        sem_wait(&semaphores[i]);
+        sem_wait(semaphores[i]);
 
         printf("Child %d starts\n", i + 1);
 
@@ -69,8 +69,8 @@ int main() {
 
         printf("Child %d finishes with counter %d\n", i + 1, *counter);
 
-        sem_destroy(&semaphores[i]);
-        sem_post(&semaphores[i+1]);
+        // sem_destroy(&semaphores[i]);
+        sem_post(semaphores[i+1]);
         shmdt((char *) counter);
         exit(EXIT_SUCCESS);
     }
