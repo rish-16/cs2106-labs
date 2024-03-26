@@ -84,18 +84,18 @@ int main() {
     printf("Final counter value: %d\n", *counter);
 
     // Detach the shared memory segment
-    if (shmdt(counter) == -1) {
+    if (shmdt(shared_memory) == -1) {
         perror("shmdt");
         exit(1);
     }
 
-    for (int k = 0; k < NUM_CHILDREN; k++) {
-        if (shmdt(semaphores[k]) == -1) {
-            perror("shmdt");
-            exit(1);
-        }
-        sem_destroy(semaphores[k]);
-    }
+    // for (int k = 0; k < NUM_CHILDREN; k++) {
+    //     if (shmdt(&semaphores[k]) == -1) {
+    //         perror("shmdt");
+    //         exit(1);
+    //     }
+    //     sem_destroy(&semaphores[k]);
+    // }
 
     if (shmctl(shmid, IPC_RMID, NULL) == -1) {
         perror("shmctl");
